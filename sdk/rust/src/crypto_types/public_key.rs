@@ -1,0 +1,71 @@
+use crate::byte_array::ByteArray;
+
+crate::byte_array!(
+    #[derive(Clone)]
+    struct PublicKey; 32; str_impl
+);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::byte_array::*;
+    use crate::test_utils;
+
+    #[test]
+    fn can_create_with_correct_number_of_bytes() {
+        can_create_byte_array_with_correct_number_of_bytes::<PublicKey>(32);
+    }
+
+    #[test]
+    #[should_panic]
+    fn can_create_with_smaller_number_of_bytes() {
+        cannot_create_byte_array_with_smaller_number_of_bytes::<PublicKey>();
+    }
+
+    #[test]
+    #[should_panic]
+    fn can_create_with_larger_number_of_bytes() {
+        cannot_create_byte_array_with_larger_number_of_bytes::<PublicKey>();
+    }
+
+    #[test]
+    fn can_create_from_existing() {
+        // Arrange:
+        let raw_bytes = test_utils::rand_bytes(PublicKey::SIZE);
+
+        // Act:
+        let instance = PublicKey::from(&raw_bytes[..]);
+        let instance_clone = instance.clone();
+
+        // Assert:
+        assert_eq!(raw_bytes, instance.as_bytes());
+        assert_eq!(raw_bytes, instance_clone.as_bytes());
+    }
+
+    #[test]
+    fn can_serialize_with_serde() {
+        let data = (0..0xFF).collect::<Vec<u8>>();
+        let hash = PublicKey::from(&data[138..138 + 32]);
+        let serialized_hash = serde_json::to_string(&hash).unwrap();
+
+        assert_eq!(
+            serialized_hash,
+            r#"{"bytes":[138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169]}"#
+        );
+    }
+
+    #[test]
+    fn can_deserialize_with_serde() {
+        let jsonstr = r#"{"bytes": [141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,
+						157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172]}"#;
+        let deserialized: PublicKey = serde_json::from_str(jsonstr).unwrap();
+
+        assert_eq!(
+            deserialized.as_bytes(),
+            &[
+                141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156,
+                157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172
+            ]
+        );
+    }
+}
