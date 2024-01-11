@@ -1,9 +1,12 @@
 use crate::byte_array::ByteArray;
+use serde_with::{serde_as, Bytes};
 
 crate::byte_array!(
     #[derive(Clone)]
     struct PublicKey; 32; str_impl
 );
+
+// note: this deliberately does not implement Zeroed trait
 
 #[cfg(test)]
 mod tests {
@@ -57,7 +60,7 @@ mod tests {
     #[test]
     fn can_deserialize_with_serde() {
         let jsonstr = r#"{"bytes": [141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,
-						157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172]}"#;
+                        157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172]}"#;
         let deserialized: PublicKey = serde_json::from_str(jsonstr).unwrap();
 
         assert_eq!(

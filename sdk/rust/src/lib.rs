@@ -6,6 +6,7 @@ pub mod byte_array;
 pub mod crypto_types;
 pub mod nem;
 pub mod network;
+pub mod network_timestamp_datetime_converter;
 pub mod symbol;
 
 #[cfg(test)]

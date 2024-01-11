@@ -13,14 +13,18 @@ pub trait Zeroed {
 
 #[macro_export]
 macro_rules! byte_array {
-	(
-		$(#[$meta:meta])*
-		struct $struct_name:ident; $byte_size:literal; no_str_impl
-	) => {
-		$(#[$meta])*
+    (
+        $(#[$meta:meta])*
+        struct $struct_name:ident; $byte_size:literal; no_str_impl
+    ) => {
+        type BufType = [u8; $byte_size];
+
+        $(#[$meta])*
+        #[serde_as]
         #[derive(Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
         pub struct $struct_name {
-            bytes: [u8; $byte_size],
+            #[serde_as(as = "Bytes")]
+            bytes: BufType,
         }
 
         impl $crate::byte_array::ByteArray for $struct_name {
@@ -35,7 +39,7 @@ macro_rules! byte_array {
             }
         }
 
-		impl From<&[u8]> for $struct_name {
+        impl From<&[u8]> for $struct_name {
             fn from(other: &[u8]) -> Self {
                 assert_eq!(Self::SIZE, other.len());
                 $struct_name {
@@ -43,24 +47,24 @@ macro_rules! byte_array {
                 }
             }
         }
-	};
+    };
     (
-		$(#[$meta:meta])*
-		struct $struct_name:ident; $byte_size:literal; str_impl
-	) => {
-		$crate::byte_array!(
-			$(#[$meta])*
-			struct $struct_name; $byte_size; no_str_impl);
+        $(#[$meta:meta])*
+        struct $struct_name:ident; $byte_size:literal; str_impl
+    ) => {
+        $crate::byte_array!(
+            $(#[$meta])*
+            struct $struct_name; $byte_size; no_str_impl);
 
-		impl From<&str> for $struct_name {
-			fn from(hex_str: &str) -> Self {
-				let mut obj = Self{ bytes: [0; $byte_size] };
-				data_encoding::HEXUPPER
-					.decode_mut(hex_str.as_bytes(), obj.as_bytes_mut())
-					.unwrap();
-				obj
-			}
-		}
+        impl From<&str> for $struct_name {
+            fn from(hex_str: &str) -> Self {
+                let mut obj = Self{ bytes: [0; $byte_size] };
+                data_encoding::HEXUPPER
+                    .decode_mut(hex_str.as_bytes(), obj.as_bytes_mut())
+                    .unwrap();
+                obj
+            }
+        }
     };
 }
 

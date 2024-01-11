@@ -1,15 +1,16 @@
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, NaiveDate, TimeZone, Utc};
 use digest::Digest;
 use lazy_static::lazy_static;
 use sha3::Keccak256;
 
 use self::address::Address;
+use self::network_timestamp::NetworkTimestamp;
 use crate::byte_array::ByteArray;
 use crate::network::Network as BasicNetwork;
+use crate::network_timestamp_datetime_converter::{NetworkTimestampDatetimeConverter, TimeUnits};
 
 pub mod address;
-//pub mod network_timestamp;
-//pub mod network_timestamp_datetime_converter;
+pub mod network_timestamp;
 
 #[derive(Clone, Debug, derive_more::Constructor)]
 pub struct Network {
@@ -20,6 +21,7 @@ pub struct Network {
 
 impl BasicNetwork for Network {
     type ADDRESS = Address;
+    type TIMESTAMP = NetworkTimestamp;
 
     fn identifier(&self) -> u8 {
         self.identifier
@@ -41,6 +43,13 @@ impl BasicNetwork for Network {
         buffer[21..].copy_from_slice(&checksum[0..4]);
         Address::from(&buffer[..])
     }
+
+    fn datetime_converter(&self) -> NetworkTimestampDatetimeConverter {
+        NetworkTimestampDatetimeConverter {
+            epoch: self.epoch_time,
+            time_units: TimeUnits::Seconds,
+        }
+    }
 }
 
 lazy_static! {
@@ -48,12 +57,11 @@ lazy_static! {
         Network::new(
             "mainnet",
             0x68,
-            DateTime::<Utc>::from_utc(
-                NaiveDate::from_ymd_opt(2015, 3, 29)
+            Utc.from_utc_datetime(
+                &NaiveDate::from_ymd_opt(2015, 3, 29)
                     .unwrap()
                     .and_hms_opt(0, 6, 25)
                     .unwrap(),
-                Utc,
             ),
         )
     };

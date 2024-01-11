@@ -2,10 +2,11 @@ use std::fmt;
 
 use crate::byte_array::ByteArray;
 use data_encoding::BASE32_NOPAD;
+use serde_with::{serde_as, Bytes};
 
 crate::byte_array!(
-	#[derive(Clone)]
-	struct Address; 24; no_str_impl);
+    #[derive(Clone)]
+    struct Address; 24; no_str_impl);
 
 impl Address {
     fn zero() -> Self {

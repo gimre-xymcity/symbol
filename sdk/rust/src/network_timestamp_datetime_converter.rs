@@ -10,12 +10,12 @@ pub enum TimeUnits {
 
 /// Provides utilities for converting between network timestamp and datetimes.
 pub struct NetworkTimestampDatetimeConverter {
-    epoch: DateTime<Utc>,
-    time_units: TimeUnits,
+    pub epoch: DateTime<Utc>,
+    pub time_units: TimeUnits,
 }
 
 impl NetworkTimestampDatetimeConverter {
-    fn to_datetime(&self, raw_timestamp: i64) -> DateTime<Utc> {
+    pub fn to_datetime(&self, raw_timestamp: i64) -> DateTime<Utc> {
         self.epoch
             + match self.time_units {
                 TimeUnits::Hours => Duration::hours,
@@ -24,7 +24,7 @@ impl NetworkTimestampDatetimeConverter {
             }(raw_timestamp)
     }
 
-    fn to_difference(&self, datetime: DateTime<Utc>) -> i64 {
+    pub fn to_difference(&self, datetime: DateTime<Utc>) -> i64 {
         let duration = datetime - self.epoch;
         assert!(duration >= Duration::zero());
         match self.time_units {
@@ -38,7 +38,7 @@ impl NetworkTimestampDatetimeConverter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::NaiveDate;
+    use chrono::{NaiveDate, TimeZone};
 
     fn create_datetime(
         year: i32,
@@ -48,12 +48,11 @@ mod tests {
         min: u32,
         sec: u32,
     ) -> DateTime<Utc> {
-        DateTime::<Utc>::from_utc(
-            NaiveDate::from_ymd_opt(year, month, day)
+        Utc.from_utc_datetime(
+            &NaiveDate::from_ymd_opt(year, month, day)
                 .unwrap()
                 .and_hms_opt(hour, min, sec)
                 .unwrap(),
-            Utc,
         )
     }
 
@@ -76,12 +75,11 @@ mod tests {
 
         // Assert:
         assert_eq!(
-            DateTime::<Utc>::from_utc(
-                NaiveDate::from_ymd_opt(2020, 1, 2)
+            Utc.from_utc_datetime(
+                &NaiveDate::from_ymd_opt(2020, 1, 2)
                     .unwrap()
                     .and_hms_opt(3, 0, 0)
-                    .unwrap(),
-                Utc
+                    .unwrap()
             ),
             utc_datetime
         )
@@ -97,12 +95,11 @@ mod tests {
 
         // Assert:
         assert_eq!(
-            DateTime::<Utc>::from_utc(
-                NaiveDate::from_ymd_opt(2020, 1, 2)
+            Utc.from_utc_datetime(
+                &NaiveDate::from_ymd_opt(2020, 1, 2)
                     .unwrap()
                     .and_hms_opt(3 + 5, 0, 0)
-                    .unwrap(),
-                Utc
+                    .unwrap()
             ),
             utc_datetime
         )

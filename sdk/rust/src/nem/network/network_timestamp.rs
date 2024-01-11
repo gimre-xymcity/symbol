@@ -4,22 +4,11 @@ use std::fmt;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct NetworkTimestamp(i64);
 
-impl NetworkTimestamp {
-    /// Adds a specified number of milliseconds to timestamp.
-    pub fn add_milliseconds(&self, count: i64) -> Self {
-        Self(self.0 + count)
-    }
-}
-
 /// Represents a symbol network timestamp with millisecond resolution
 ///
 impl BasicNetworkTimestamp for NetworkTimestamp {
     fn new(value: i64) -> Self {
         Self(value)
-    }
-
-    fn timestamp(&self) -> i64 {
-        self.0
     }
 
     /// Returns `true` if this is epochal timestamp.
@@ -29,7 +18,11 @@ impl BasicNetworkTimestamp for NetworkTimestamp {
 
     /// Adds a specified number of seconds to timestamp.
     fn add_seconds(&self, count: i64) -> Self {
-        self.add_milliseconds(1000 * count)
+        Self(self.0 + count)
+    }
+
+    fn timestamp(&self) -> i64 {
+        self.0
     }
 }
 
@@ -64,19 +57,6 @@ mod tests {
     }
 
     #[test]
-    fn can_add_milliseconds() {
-        // Arrange:
-        let original_timestamp = NetworkTimestamp(100);
-
-        // Act:
-        let timestamp = original_timestamp.add_milliseconds(50);
-
-        // Assert:
-        assert_eq!(100, original_timestamp.0);
-        assert_eq!(150, timestamp.0);
-    }
-
-    #[test]
     fn can_add_seconds() {
         // Arrange:
         let original_timestamp = NetworkTimestamp(100);
@@ -86,7 +66,7 @@ mod tests {
 
         // Assert:
         assert_eq!(100, original_timestamp.0);
-        assert_eq!(100 + 50 * 1000, timestamp.0);
+        assert_eq!(100 + 50, timestamp.0);
     }
 
     #[test]
@@ -99,7 +79,7 @@ mod tests {
 
         // Assert:
         assert_eq!(100, original_timestamp.0);
-        assert_eq!(100 + 50 * 60 * 1000, timestamp.0);
+        assert_eq!(100 + 50 * 60, timestamp.0);
     }
 
     #[test]
@@ -112,7 +92,7 @@ mod tests {
 
         // Assert:
         assert_eq!(100, original_timestamp.0);
-        assert_eq!(100 + 50 * 60 * 60 * 1000, timestamp.0);
+        assert_eq!(100 + 50 * 60 * 60, timestamp.0);
     }
 
     #[test]
@@ -132,6 +112,6 @@ mod tests {
         let timestamp = NetworkTimestamp(123).add_hours(10);
 
         // Act + Assert:
-        assert_eq!("36000123", format!("{}", timestamp));
+        assert_eq!("36123", format!("{}", timestamp));
     }
 }
